@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package api;
+
+message TimeEntry {
+  int32 ID = 1;
+  string UserID = 2;
+  int64 Timestamp = 3;
+  enum Status {
+    ClockedOut = 0;
+    ClockedIn  = 1;
+  }
+  Status State = 4;
+}
+
