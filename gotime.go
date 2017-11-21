@@ -10,8 +10,8 @@ type TimeEntryID int
 
 type User struct {
   ID         UserID    `json:"ID"`
-  Token      string    `json:"token"`
   Email      string    `json:"email"`
+  Token      string    `json:"token"`
   LastLogin  time.Time `json:"lastLogin"`
   IsDisabled bool      `json:"isDisabled"`
 }
@@ -34,12 +34,13 @@ type Client interface {
 }
 
 type TimeEntryService interface {
-  TimeEntries(id UserID, startDate time.Time, endDate time.Time) ([]Timesheet, error)
-  CreateTimeEntry(timesheet *Timesheet) error
+  TimeEntries(id UserID, startDate time.Time, endDate time.Time) ([]TimeEntry, error)
+  CreateTimeEntry(timesheet *TimeEntry) error
 }
 
 type UserService interface {
   User(id UserID) (*User, error)
+  Users() ([]User, error)
   CreateUser(user *User) error
 
   SetToken(id UserID, token string) error
