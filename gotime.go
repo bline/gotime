@@ -17,8 +17,8 @@ type User struct {
 }
 
 const (
-  ClockedOut = iota
-  ClockedIn  = iota
+  StateClockedOut = iota
+  StateClockedIn  = iota
 )
 
 type TimeEntry struct {
@@ -29,6 +29,7 @@ type TimeEntry struct {
 }
 
 type Client interface {
+  OAuthService() OAuthService
   UserService() UserService
   TimeEntryService() TimeEntryService
 }
@@ -37,6 +38,8 @@ type TimeEntryService interface {
   TimeEntries(id UserID, startDate time.Time, endDate time.Time) ([]Timesheet, error)
   CreateTimeEntry(timesheet *Timesheet) error
 }
+
+
 
 type UserService interface {
   User(id UserID) (*User, error)
