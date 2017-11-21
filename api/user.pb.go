@@ -7,12 +7,55 @@ import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
+import context "golang.org/x/net/context"
+import grpc "google.golang.org/grpc"
+
 import io "io"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+
+type LogoutInfo struct {
+	Success bool `protobuf:"varint,1,opt,name=Success,proto3" json:"Success,omitempty"`
+}
+
+func (m *LogoutInfo) Reset()                    { *m = LogoutInfo{} }
+func (m *LogoutInfo) String() string            { return proto.CompactTextString(m) }
+func (*LogoutInfo) ProtoMessage()               {}
+func (*LogoutInfo) Descriptor() ([]byte, []int) { return fileDescriptorUser, []int{0} }
+
+func (m *LogoutInfo) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+type AuthInfo struct {
+	Email string `protobuf:"bytes,1,opt,name=Email,proto3" json:"Email,omitempty"`
+	Token string `protobuf:"bytes,2,opt,name=Token,proto3" json:"Token,omitempty"`
+}
+
+func (m *AuthInfo) Reset()                    { *m = AuthInfo{} }
+func (m *AuthInfo) String() string            { return proto.CompactTextString(m) }
+func (*AuthInfo) ProtoMessage()               {}
+func (*AuthInfo) Descriptor() ([]byte, []int) { return fileDescriptorUser, []int{1} }
+
+func (m *AuthInfo) GetEmail() string {
+	if m != nil {
+		return m.Email
+	}
+	return ""
+}
+
+func (m *AuthInfo) GetToken() string {
+	if m != nil {
+		return m.Token
+	}
+	return ""
+}
 
 type User struct {
 	ID         int32  `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
@@ -25,7 +68,7 @@ type User struct {
 func (m *User) Reset()                    { *m = User{} }
 func (m *User) String() string            { return proto.CompactTextString(m) }
 func (*User) ProtoMessage()               {}
-func (*User) Descriptor() ([]byte, []int) { return fileDescriptorUser, []int{0} }
+func (*User) Descriptor() ([]byte, []int) { return fileDescriptorUser, []int{2} }
 
 func (m *User) GetID() int32 {
 	if m != nil {
@@ -63,8 +106,174 @@ func (m *User) GetIsDisabled() bool {
 }
 
 func init() {
+	proto.RegisterType((*LogoutInfo)(nil), "api.LogoutInfo")
+	proto.RegisterType((*AuthInfo)(nil), "api.AuthInfo")
 	proto.RegisterType((*User)(nil), "api.User")
 }
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// Client API for Auth service
+
+type AuthClient interface {
+	Login(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*User, error)
+	Logout(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*LogoutInfo, error)
+}
+
+type authClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewAuthClient(cc *grpc.ClientConn) AuthClient {
+	return &authClient{cc}
+}
+
+func (c *authClient) Login(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := grpc.Invoke(ctx, "/api.Auth/Login", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) Logout(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*LogoutInfo, error) {
+	out := new(LogoutInfo)
+	err := grpc.Invoke(ctx, "/api.Auth/Logout", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Auth service
+
+type AuthServer interface {
+	Login(context.Context, *AuthInfo) (*User, error)
+	Logout(context.Context, *AuthInfo) (*LogoutInfo, error)
+}
+
+func RegisterAuthServer(s *grpc.Server, srv AuthServer) {
+	s.RegisterService(&_Auth_serviceDesc, srv)
+}
+
+func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Auth/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).Login(ctx, req.(*AuthInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Auth/Logout",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).Logout(ctx, req.(*AuthInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Auth_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "api.Auth",
+	HandlerType: (*AuthServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _Auth_Login_Handler,
+		},
+		{
+			MethodName: "Logout",
+			Handler:    _Auth_Logout_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "user.proto",
+}
+
+func (m *LogoutInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *LogoutInfo) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if m.Success {
+		dAtA[i] = 0x8
+		i++
+		if m.Success {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i++
+	}
+	return i, nil
+}
+
+func (m *AuthInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AuthInfo) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.Email) > 0 {
+		dAtA[i] = 0xa
+		i++
+		i = encodeVarintUser(dAtA, i, uint64(len(m.Email)))
+		i += copy(dAtA[i:], m.Email)
+	}
+	if len(m.Token) > 0 {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintUser(dAtA, i, uint64(len(m.Token)))
+		i += copy(dAtA[i:], m.Token)
+	}
+	return i, nil
+}
+
 func (m *User) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -124,6 +333,29 @@ func encodeVarintUser(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return offset + 1
 }
+func (m *LogoutInfo) Size() (n int) {
+	var l int
+	_ = l
+	if m.Success {
+		n += 2
+	}
+	return n
+}
+
+func (m *AuthInfo) Size() (n int) {
+	var l int
+	_ = l
+	l = len(m.Email)
+	if l > 0 {
+		n += 1 + l + sovUser(uint64(l))
+	}
+	l = len(m.Token)
+	if l > 0 {
+		n += 1 + l + sovUser(uint64(l))
+	}
+	return n
+}
+
 func (m *User) Size() (n int) {
 	var l int
 	_ = l
@@ -159,6 +391,184 @@ func sovUser(x uint64) (n int) {
 }
 func sozUser(x uint64) (n int) {
 	return sovUser(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *LogoutInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowUser
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LogoutInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LogoutInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Success", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowUser
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Success = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipUser(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthUser
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *AuthInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowUser
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AuthInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AuthInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Email", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowUser
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthUser
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Email = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Token", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowUser
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthUser
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Token = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipUser(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthUser
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *User) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -434,16 +844,21 @@ var (
 func init() { proto.RegisterFile("user.proto", fileDescriptorUser) }
 
 var fileDescriptorUser = []byte{
-	// 165 bytes of a gzipped FileDescriptorProto
+	// 252 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2a, 0x2d, 0x4e, 0x2d,
-	0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x4e, 0x2c, 0xc8, 0x54, 0x6a, 0x60, 0xe4, 0x62,
-	0x09, 0x2d, 0x4e, 0x2d, 0x12, 0xe2, 0xe3, 0x62, 0xf2, 0x74, 0x91, 0x60, 0x54, 0x60, 0xd4, 0x60,
-	0x0d, 0x62, 0xf2, 0x74, 0x11, 0x12, 0xe1, 0x62, 0x75, 0xcd, 0x4d, 0xcc, 0xcc, 0x91, 0x60, 0x52,
-	0x60, 0xd4, 0xe0, 0x0c, 0x82, 0x70, 0x40, 0xa2, 0x21, 0xf9, 0xd9, 0xa9, 0x79, 0x12, 0xcc, 0x10,
-	0x51, 0x30, 0x47, 0x48, 0x86, 0x8b, 0xd3, 0x27, 0xb1, 0xb8, 0xc4, 0x27, 0x3f, 0x3d, 0x33, 0x4f,
-	0x82, 0x45, 0x81, 0x51, 0x83, 0x39, 0x08, 0x21, 0x20, 0x24, 0xc7, 0xc5, 0xe5, 0x59, 0xec, 0x92,
-	0x59, 0x9c, 0x98, 0x94, 0x93, 0x9a, 0x22, 0xc1, 0xaa, 0xc0, 0xa8, 0xc1, 0x11, 0x84, 0x24, 0xe2,
-	0x24, 0x70, 0xe2, 0x91, 0x1c, 0xe3, 0x85, 0x47, 0x72, 0x8c, 0x0f, 0x1e, 0xc9, 0x31, 0x4e, 0x78,
-	0x2c, 0xc7, 0x90, 0xc4, 0x06, 0x76, 0xa0, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0xd8, 0xdf, 0x32,
-	0x66, 0xae, 0x00, 0x00, 0x00,
+	0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x4e, 0x2c, 0xc8, 0x54, 0x52, 0xe3, 0xe2, 0xf2,
+	0xc9, 0x4f, 0xcf, 0x2f, 0x2d, 0xf1, 0xcc, 0x4b, 0xcb, 0x17, 0x92, 0xe0, 0x62, 0x0f, 0x2e, 0x4d,
+	0x4e, 0x4e, 0x2d, 0x2e, 0x96, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x08, 0x82, 0x71, 0x95, 0xcc, 0xb8,
+	0x38, 0x1c, 0x4b, 0x4b, 0x32, 0xc0, 0xaa, 0x44, 0xb8, 0x58, 0x5d, 0x73, 0x13, 0x33, 0x73, 0xc0,
+	0x6a, 0x38, 0x83, 0x20, 0x1c, 0x90, 0x68, 0x48, 0x7e, 0x76, 0x6a, 0x9e, 0x04, 0x13, 0x44, 0x14,
+	0xcc, 0x51, 0x6a, 0x60, 0xe4, 0x62, 0x09, 0x2d, 0x4e, 0x2d, 0x12, 0xe2, 0xe3, 0x62, 0xf2, 0x74,
+	0x01, 0xeb, 0x60, 0x0d, 0x62, 0xf2, 0x74, 0x41, 0x18, 0xc2, 0x84, 0xd5, 0x10, 0x66, 0x24, 0x43,
+	0x84, 0x64, 0xb8, 0x38, 0x7d, 0x12, 0x8b, 0x4b, 0x7c, 0xf2, 0xd3, 0x33, 0xf3, 0x24, 0x58, 0x14,
+	0x18, 0x35, 0x98, 0x83, 0x10, 0x02, 0x42, 0x72, 0x5c, 0x5c, 0x9e, 0xc5, 0x2e, 0x99, 0xc5, 0x89,
+	0x49, 0x39, 0xa9, 0x29, 0x12, 0xac, 0x60, 0x77, 0x23, 0x89, 0x18, 0x85, 0x73, 0xb1, 0x80, 0x9c,
+	0x2e, 0xa4, 0xcc, 0xc5, 0x0a, 0xd1, 0xc0, 0xab, 0x97, 0x58, 0x90, 0xa9, 0x07, 0xf3, 0x8e, 0x14,
+	0x27, 0x98, 0x0b, 0x72, 0xa4, 0x12, 0x83, 0x90, 0x16, 0x17, 0x1b, 0x24, 0x3c, 0xd0, 0x55, 0xf1,
+	0x83, 0xb9, 0x88, 0xb0, 0x52, 0x62, 0x70, 0x12, 0x38, 0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39,
+	0xc6, 0x07, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96, 0x63, 0x48, 0x62, 0x03, 0x87, 0xac, 0x31, 0x20,
+	0x00, 0x00, 0xff, 0xff, 0x92, 0xa9, 0x3e, 0xfa, 0x67, 0x01, 0x00, 0x00,
 }

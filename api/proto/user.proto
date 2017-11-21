@@ -2,6 +2,21 @@ syntax = "proto3";
 
 package api;
 
+
+service Auth {
+  rpc Login (AuthInfo) returns (User) {}
+  rpc Logout (AuthInfo) returns (LogoutInfo) {}
+}
+
+message LogoutInfo {
+  bool Success = 1;
+}
+
+message AuthInfo {
+  string Email = 1;
+  string Token = 2;
+}
+
 message User {
   int32 ID = 1;
   string Email = 2;

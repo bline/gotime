@@ -10,6 +10,8 @@
 
 	It has these top-level messages:
 		TimeEntry
+		LogoutInfo
+		AuthInfo
 		User
 */
 package api
