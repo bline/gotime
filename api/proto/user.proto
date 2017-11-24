@@ -2,26 +2,50 @@ syntax = "proto3";
 
 package api;
 
+import "common.proto";
+import "google/protobuf/timestamp.proto";
 
-service Auth {
-  rpc Login (AuthInfo) returns (User) {}
-  rpc Logout (AuthInfo) returns (LogoutInfo) {}
+
+service Accounts {
+	rpc GetUser(GetUserRequest) returns (User);
+	rpc GetUsers(GetUsersRequest) returns (stream User);
+	rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
 }
 
-message LogoutInfo {
-  bool Success = 1;
+message DeleteUserRequest {
+	oneof UserIdent {
+		string Email = 1;
+		int64 UserID = 2;
+	}
 }
 
-message AuthInfo {
-  string Email = 1;
-  string Token = 2;
+message DeleteUserResponse {
+	bool Success = 1;
+	string Message = 2;
+}
+
+message GetUserRequest {
+	oneof UserIdent {
+		string Email = 1;
+		int64 UserID = 2;
+	}
+}
+
+message GetUsersRequest {
+	api.SearchOptions SearchOptions = 1;
+	bool IsDeleted = 2;
+	bool IsDisabled = 3;
+	bool IsLockedOut = 4;
 }
 
 message User {
-  int32 ID = 1;
-  string Email = 2;
-  string Token = 3;
-  int64 LastLogin = 4;
-  bool IsDisabled = 5;
+	int64 ID = 1;
+	string Email = 2;
+	string Token = 3;
+	google.protobuf.Timestamp LastLogin = 4;
+	google.protobuf.Timestamp LockedOut = 5;
+	bool IsDisabled = 6;
+	bool IsDeleted = 7;
+	bool IsLockedOut = 8;
 }
 
