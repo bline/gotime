@@ -8,26 +8,27 @@ type UserID int
 type TimeEntryID int
 
 type User struct {
-  ID         UserID    `json:"ID"`
-  Email      string    `json:"email"`
-  Token      string    `json:"token"`
-  LastLogin  time.Time `json:"lastLogin"`
-  IsDisabled bool      `json:"isDisabled"`
+  ID         UserID
+  Email      string
+  Token      string
+  LastLogin  time.Time
+  IsDisabled bool
 }
 
 const (
-  ClockedOut = iota
-  ClockedIn  = iota
+  StateClockedOut = iota
+  StateClockedIn  = iota
 )
 
 type TimeEntry struct {
-  ID         TimeEntryID `json:"ID"`
-  UserID     UserID      `json:"userID"`
-  Timestamp  time.Time   `json:"timestamp"`
-  State      int         `json:"state"`
+  ID         TimeEntryID
+  UserID     UserID
+  Timestamp  time.Time
+  State      int
 }
 
 type Client interface {
+  OAuthService() OAuthService
   UserService() UserService
   TimeEntryService() TimeEntryService
 }
