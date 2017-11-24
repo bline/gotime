@@ -1,7 +1,6 @@
 package gotime
 
 import (
-  "log"
   "time"
 )
 
@@ -48,6 +47,6 @@ type UserService interface {
 }
 
 type TimesheetService interface {
-  Timesheet(id UserID) (*Timesheet, error)
+  Timesheet(id UserID) (*TimeEntry, error)
 }
 
