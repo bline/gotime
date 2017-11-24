@@ -14,15 +14,15 @@ import (
 
 	"strings"
 
-	library "../_proto/examplecom/library"
+	"github.com/bline/gotime/api"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"golang.org/x/net/context"
 )
 
 var (
-	enableTls       = flag.Bool("enable_tls", false, "Use TLS - required for HTTP2.")
-	tlsCertFilePath = flag.String("tls_cert_file", "../misc/localhost.crt", "Path to the CRT/PEM file.")
-	tlsKeyFilePath  = flag.String("tls_key_file", "../misc/localhost.key", "Path to the private key file.")
+	enableTls       = flag.Bool("enable_tls", true, "Use TLS - required for HTTP2.")
+	tlsCertFilePath = flag.String("tls_cert_file", "/home/sbeck/.private/smc.crt", "Path to the CRT/PEM file.")
+	tlsKeyFilePath  = flag.String("tls_key_file", "/home/sbeck/.private/smc.key", "Path to the private key file.")
 )
 
 func main() {
@@ -34,8 +34,8 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	library.RegisterBookServiceServer(grpcServer, &bookService{})
-	grpclog.SetLogger(log.New(os.Stdout, "exampleserver: ", log.LstdFlags))
+	api.RegisterTimeEntryServiceServer(grpcServer, &bookService{})
+	grpclog.SetLogger(log.New(os.Stdout, "grpc: ", log.LstdFlags))
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
