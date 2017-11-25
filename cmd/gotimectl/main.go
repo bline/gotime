@@ -43,12 +43,12 @@ func main() {
 		},
 	}
 	app.Commands = []cli.Command{
-		cli.Command{
+		{
 			Name:        "config",
 			Aliases:     []string{"conf", "cfg"},
 			Usage:       "set/get settings or initialize config"
-			Subcommands: cli.Commands{
-				cli.Command{
+			Subcommands: []cli.Command{
+				{
 					Name: "init",
 					Action: initConfig,
 					Usage: "initialize configuration settings",
@@ -60,24 +60,24 @@ func main() {
 						},
 					},
 				},
-				cli.Command{
+				{
 					Name: "get",
 					Action: getConfig,
 					Usage: "get configuration setting or all settings",
 				},
-				cli.Command{
+				{
 					Name: "set",
 					Action: setConfig,
 					Usage: "set configuration option",
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name: "db",
 			Aliases: []string{"database"},
 			Usage: "work with the gotime database",
-			Subcommands: cli.Commands{
-				cli.Command{
+			Subcommands: []cli.Command{
+				{
 					Name: "init",
 					Action: initDatabase,
 					Usage: "initialize the database, wipes all data",
@@ -91,7 +91,7 @@ func main() {
 				},
 			},
 		},
-		cli.Command{
+		{
 			Name: "api",
 			Usage: "make RPC calls to gotime's GRPC API",
 			Flags: []cli.Flag{
@@ -101,25 +101,56 @@ func main() {
 					EnvVar: "GOTIME_APIUSER",
 				},
 			}
-			Subcommands: cli.Commands{
-				cli.Command{
+			Subcommands: []cli.Command{
+				{
 					Name: "TimeSheet",
 					Usage: "operations dealing with current user's timesheet",
-					Subcommands: cli.Commands{
-						cli.Command{
+					Subcommands: []cli.Command{
+						{
 							Name: "ClockIn",
 							Usage: "Clock the current user into gotime.",
 							Action: apiTSClockIn,
 						},
-						cli.Command{
+						{
 							Name: "ClockOut",
 							Usage: "Clock the current user out of gotime.",
 							Action: apiTSClockOut,
 						},
-						cli.Command{
+						{
 							Name: "Status",
 							Usage: "Check clocked-in status of the current user.",
 							Action: apiTSStatus,
+						},
+					},
+				},
+				{
+					Name: "Accounts",
+					Usage: "administration os user accounts",
+					Subcommands: []cli.Command{
+						{
+							Name: "GetUser",
+							Usage: "Get user by email or ID. requires admin privs",
+							Action: apiAcctGetUser,
+						},
+						{
+							Name: "GetUsers",
+							Usage: "List users given a query and filters",
+							Action: apiAcctGetUsers,
+						},
+						{
+							Name: "DisableUser",
+							Usage: "Disable a user account",
+							Action: apiAcctDisableUser,
+						},
+						{
+							Name: "DeleteUser",
+							Usage: "Delete a user account",
+							Action: apiAcctDeleteUser,
+						},
+						{
+							Name: "LockUser",
+							Usage: "Lock a user account",
+							Action: apiAcctLockUser,
 						},
 					},
 				},
@@ -128,10 +159,31 @@ func main() {
 	}
 	app.Name = "gotimectl"
 	app.Usage = "initialize and control the gotime server"
-	c := config.New(
+	c := config.New(env);
 }
 
-func apiClockIn (c *cli.Contaxt) error {
+func apiTSClockIn (c *cli.Contaxt) error {
+}
+
+func apiTSClockOut (c *cli.Contaxt) error {
+}
+
+func apiTSStatus (c *cli.Contaxt) error {
+}
+
+func apiAcctGetUser (c *cli.Contaxt) error {
+}
+
+func apiAcctGetUsers (c *cli.Contaxt) error {
+}
+
+func apiAcctDisableUser (c *cli.Contaxt) error {
+}
+
+func apiAcctDeleteUser (c *cli.Contaxt) error {
+}
+
+func apiAcctLockUser (c *cli.Contaxt) error {
 }
 
 func initDatabase (c *cli.Context) error {
