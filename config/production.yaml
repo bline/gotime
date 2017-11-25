@@ -1,5 +1,5 @@
 
 SQL:
     Driver: mysql
-    Connection: gotime:^5pXweFk9Q8ZVXu7!yOv@127.0.0.1:3306/gotime
+    Connection: gotime:PASSW0RD@127.0.0.1:3306/gotime
 
