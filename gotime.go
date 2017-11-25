@@ -17,8 +17,9 @@ type User struct {
 }
 
 const (
-  StateClockedOut = iota
-  StateClockedIn  = iota
+  StateClockedOut = 0
+  StateClockedIn  = 1
+  StateOnBreak    = 3
 )
 
 type TimeEntry struct {
@@ -31,7 +32,7 @@ type TimeEntry struct {
 type Client interface {
   OAuthService() OAuthService
   UserService() UserService
-  TimeEntryService() TimeEntryService
+  TimeSheetService() TimeSheetService
 }
 
 type TimeEntryService interface {
@@ -39,16 +40,19 @@ type TimeEntryService interface {
   CreateTimeEntry(timesheet *TimeEntry) error
 }
 
-type UserService interface {
-  User(id UserID) (*User, error)
-  Users() ([]User, error)
-  CreateUser(user *User) error
 
-  SetToken(id UserID, token string) error
-  SetIsDisabled(id UserID, isDisabled bool) error
+type UserService interface {
+	GetUser(context.Context, *api.GetUserRequest) (*api.User, error)
+	GetUsers(*api.GetUsersRequest) error
+	DeleteUser(*api.DeleteUserRequest) error
+	DisableUser(*api.DisableUserRequest) error
+	LockUser(*api.LockUserRequest) error
 }
 
-type TimesheetService interface {
-  Timesheet(id UserID) (*TimeEntry, error)
+type TimeSheetService interface {
+	ClockIn () error
+	ClockOut () error
+	GetCurrentStatus () api.TSStatusResponse
+	GetEntries (r api.TimeSheetRequest) error
 }
 

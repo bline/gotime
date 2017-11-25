@@ -9,14 +9,28 @@ import "google/protobuf/timestamp.proto";
 service Accounts {
 	rpc GetUser(GetUserRequest) returns (User);
 	rpc GetUsers(GetUsersRequest) returns (stream User);
-	rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+	rpc DisableUser(DisableUserRequest) returns (SimpleResponse);
+	rpc DeleteUser(DeleteUserRequest) returns (SimpleResponse);
+	rpc LockUser(LockUserRequest) returns (SimpleResponse);
 }
 
-message DeleteUserRequest {
+message EmailOrId {
 	oneof UserIdent {
 		string Email = 1;
 		int64 UserID = 2;
 	}
+}
+
+message LockUserRequest {
+	EmailOrId Ident;
+}
+
+message DisableUserRequest {
+	EmailOrId Ident;
+}
+
+message DeleteUserRequest {
+	EmailOrId Ident;
 }
 
 message DeleteUserResponse {
@@ -25,10 +39,7 @@ message DeleteUserResponse {
 }
 
 message GetUserRequest {
-	oneof UserIdent {
-		string Email = 1;
-		int64 UserID = 2;
-	}
+	EmailOrId Ident;
 }
 
 message GetUsersRequest {
