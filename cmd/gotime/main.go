@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"io/ioutil"
+	"encoding/json"
 	"os"
 
 	"google.golang.org/grpc"
@@ -12,100 +14,117 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/sync/errgroup"
+
 	"strings"
 
-	"github.com/bline/gotime/api"
+	"github.com/bline/gotime/api/proto"
+	"github.com/bline/gotime/config"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"golang.org/x/net/context"
 )
 
+func getEnv() string {
+	var env string = "development"
+	val, ok := os.LookupEnv("GOTIME_ENV")
+	if ok {
+		env = val
+	}
+	return env
+}
+
+func getCfg(env string) *config.Config {
+	cfg, err := config.New(env)
+	if err != nil {
+		log.Fatal("error loading config ", env, ": ", err)
+	}
+	return cfg
+}
+
+
+
+var env string = getEnv()
+var cfg *config.Config = getCfg(env)
+
 var (
-	enableTls       = flag.Bool("enable_tls", true, "Use TLS - required for HTTP2.")
-	tlsCertFilePath = flag.String("tls_cert_file", "/home/sbeck/.private/smc.crt", "Path to the CRT/PEM file.")
-	tlsKeyFilePath  = flag.String("tls_key_file", "/home/sbeck/.private/smc.key", "Path to the private key file.")
+	tlsCertFilePath    = flag.String("tls_cert_file", cfg.GetString("Certs.ServerCrt"), "Path to the CRT/PEM file.")
+	tlsKeyFilePath     = flag.String("tls_key_file", cfg.GetString("Certs.ServerKey"), "Path to the private key file.")
+	serverHostOverride = flag.String("server_host_override", cfg.GetString("Domain"), "The server name use to verify the hostname returned by TLS handshake")
 )
 
-func main() {
-	flag.Parse()
+func serveGrpc() error {
+	enableTls := cfg.GetBool("TLSEnabled")
 
 	port := 9090
 	if *enableTls {
-		port = 9091
+		port = 9443
 	}
 
 	grpcServer := grpc.NewServer()
-	api.RegisterTimeEntryServiceServer(grpcServer, &bookService{})
+	api.RegisterTimeSheetServer(grpcServer, &timesheetService{})
+	api.RegisterAccountsServer(grpcServer, &accountsService{})
 	grpclog.SetLogger(log.New(os.Stdout, "grpc: ", log.LstdFlags))
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
 		wrappedServer.ServeHTTP(resp, req)
 	}
-
 	httpServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: http.HandlerFunc(handler),
 	}
-
-	grpclog.Printf("Starting server. http port: %d, with TLS: %v", port, *enableTls)
-
-	if *enableTls {
-		if err := httpServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath); err != nil {
-			grpclog.Fatalf("failed starting http2 server: %v", err)
-		}
+	if enableTls {
+		return httpServer.ListenAndServeTLS(tlsCertFilePath, tlsKeyFilePath)
 	} else {
-		if err := httpServer.ListenAndServe(); err != nil {
-			grpclog.Fatalf("failed starting http server: %v", err)
-		}
+		return httpServer.ListenAndServe()
 	}
 }
 
-type bookService struct{}
+func serveWeb() error {
+	enableSsl := cfg.GetBool("SSLEnabled")
 
-var books = []*library.Book{
-	&library.Book{
-		Isbn:   60929871,
-		Title:  "Brave New World",
-		Author: "Aldous Huxley",
-	},
-	&library.Book{
-		Isbn:   140009728,
-		Title:  "Nineteen Eighty-Four",
-		Author: "George Orwell",
-	},
-	&library.Book{
-		Isbn:   9780140301694,
-		Title:  "Alice's Adventures in Wonderland",
-		Author: "Lewis Carroll",
-	},
-	&library.Book{
-		Isbn:   140008381,
-		Title:  "Animal Farm",
-		Author: "George Orwell",
-	},
+	port := 8080
+	if *enableSsl {
+		port = 8443
+	}
+	r := gin.Default()
+	sc := cfg.Sub("Session")
+	oc := sc.Sub("Options")
+	store := sessions.NewRedosStore(10, "tcp", "127.0.0.1:6379", sc.GetString('Password'), []byte(sc.GetString('Secret1'), sc.GetString("Secret2")))
+	opts := sessions.Options{
+		Path: oc.GetString("Path"),
+		Domain: oc.GetString("Domain"),
+		MaxAge: oc.GetInt("MaxAge"),
+		Secure: oc.GetBool("Secure"),
+		HttpOnly: oc.GetBool("HttpOnly"),
+	}
+	store.Options(opts)
+	r.Use(sessions.Sessions("gotime-auth", store))
+	setupRoutes(r)
+
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: http.HandlerFunc(handler),
+	}
+	if enableSsl {
+		return httpServer.ListenAndServeTLS(tlsCertFilePath, tlsKeyFilePath)
+	} else {
+		return httpServer.ListenAndServe()
+	}
 }
 
-func (s *bookService) GetBook(ctx context.Context, bookQuery *library.GetBookRequest) (*library.Book, error) {
-	grpc.SendHeader(ctx, metadata.Pairs("Pre-Response-Metadata", "Is-sent-as-headers-unary"))
-	grpc.SetTrailer(ctx, metadata.Pairs("Post-Response-Metadata", "Is-sent-as-trailers-unary"))
+func main() {
+	g errgroup.Group
 
-	for _, book := range books {
-		if book.Isbn == bookQuery.Isbn {
-			return book, nil
-		}
+	flag.Parse()
+
+	g.Go(serveGrpc)
+	g.Go(serveWeb)
+
+	if err := g.Wait(); err != nil {
+		log.Fatalf("failed starting http server: %v", err)
 	}
-
-	return nil, grpc.Errorf(codes.NotFound, "Book could not be found")
-}
-
-func (s *bookService) QueryBooks(bookQuery *library.QueryBooksRequest, stream library.BookService_QueryBooksServer) error {
-	stream.SendHeader(metadata.Pairs("Pre-Response-Metadata", "Is-sent-as-headers-stream"))
-	for _, book := range books {
-		if strings.HasPrefix(book.Author, bookQuery.AuthorPrefix) {
-			stream.Send(book)
-		}
-	}
-	stream.SetTrailer(metadata.Pairs("Post-Response-Metadata", "Is-sent-as-trailers-stream"))
-	return nil
 }
 

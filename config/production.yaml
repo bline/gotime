@@ -1,5 +1,20 @@
-
+Domain: gotime.shambhalamountain.org
+Certs:
+	ServerCrt: /home/sbeck/.private/smc.crt
+	ServerKey: /home/sbeck/.private/smc.key
+TLSEnabled: true
+SSLEnabled: true
 SQL:
     Driver: mysql
-    Connection: gotime:PASSW0RD@127.0.0.1:3306/gotime
+    Connection: gotime:^5pXweFk9Q8ZVXu7!yOv@127.0.0.1:3306/gotime
+Session:
+	Password: k%oCWRMS&!lfm9WLrq083GD8Jj9haXcT
+	Secret1: Itn36k4Dr87uvR2ub5ShVo$Ao4D*7UW7
+	Secret2: Og@*j0ZjGVXkVierUcGk1p3NBlZbv0Ml
+	Options:
+		Path: /
+		Domain: gotime.shambhalamountain.org
+		MaxAge: 2592000
+		Secure: true
+		HttpOnly: false
 

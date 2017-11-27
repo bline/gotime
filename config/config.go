@@ -19,7 +19,7 @@ func New(env string) (*Config, error) {
 		env = Env
 	}
 	var err error
-	if *config != nil {
+	if config != nil {
 		return config, err
 	}
 	config = viper.New()
@@ -34,11 +34,18 @@ func New(env string) (*Config, error) {
 	if err != nil {
 		log.Fatal("error on parsing configuration file")
 	}
+	setDefaults(config)
 	return config, err
+}
+
+func setDefaults(config *Config) {
+	config.SetDefault("SQL.Driver", "mysql")
+	config.SetDefault("SQL.Connection", "gotime:Passw0rd@127.0.0.1:3306/gotime")
 }
 
 func GetConfig() (*Config) {
 	if config == nil {
+		log.Printf("No config in GetConfig(), check main entry point")
 		c, _ := New("")
 		return c
 	}
