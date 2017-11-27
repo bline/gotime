@@ -20,9 +20,8 @@ import (
 
 	"strings"
 
-	"github.com/bline/gotime/api"
+	"github.com/bline/gotime/api/proto"
 	"github.com/bline/gotime/config"
-	"github.com/bline/gotime/cmd/gotime/routes"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"golang.org/x/net/context"
 )

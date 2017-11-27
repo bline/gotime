@@ -22,15 +22,15 @@ message EmailOrId {
 }
 
 message LockUserRequest {
-	EmailOrId Ident;
+	EmailOrId Ident = 1;
 }
 
 message DisableUserRequest {
-	EmailOrId Ident;
+	EmailOrId Ident = 1;
 }
 
 message DeleteUserRequest {
-	EmailOrId Ident;
+	EmailOrId Ident = 1;
 }
 
 message DeleteUserResponse {
@@ -39,7 +39,7 @@ message DeleteUserResponse {
 }
 
 message GetUserRequest {
-	EmailOrId Ident;
+	EmailOrId Ident = 1;
 }
 
 message GetUsersRequest {

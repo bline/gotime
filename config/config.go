@@ -19,7 +19,7 @@ func New(env string) (*Config, error) {
 		env = Env
 	}
 	var err error
-	if *config != nil {
+	if config != nil {
 		return config, err
 	}
 	config = viper.New()
