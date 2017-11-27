@@ -6,11 +6,11 @@ TLSEnabled: true
 SSLEnabled: true
 SQL:
     Driver: mysql
-    Connection: gotime:^5pXweFk9Q8ZVXu7!yOv@127.0.0.1:3306/gotime
+    Connection: gotime:P4ssw0rd@127.0.0.1:3306/gotime
 Session:
-	Password: k%oCWRMS&!lfm9WLrq083GD8Jj9haXcT
-	Secret1: Itn36k4Dr87uvR2ub5ShVo$Ao4D*7UW7
-	Secret2: Og@*j0ZjGVXkVierUcGk1p3NBlZbv0Ml
+	Password: Passw0rd
+	Secret1: atleat32charactersecret1
+	Secret2: atleat32charactersecret2
 	Options:
 		Path: /
 		Domain: gotime.shambhalamountain.org
