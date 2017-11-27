@@ -5,25 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"io/ioutil"
-	"encoding/json"
 	"os"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
-	"google.golang.org/grpc/metadata"
-
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
 
-	"strings"
-
 	"github.com/bline/gotime/api/proto"
 	"github.com/bline/gotime/config"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"golang.org/x/net/context"
 )
 
 func getEnv() string {
@@ -43,10 +35,10 @@ func getCfg(env string) *config.Config {
 	return cfg
 }
 
-
-
-var env string = getEnv()
-var cfg *config.Config = getCfg(env)
+var (
+	env                = getEnv()
+	cfg *config.Config = getCfg(env)
+)
 
 var (
 	tlsCertFilePath    = flag.String("tls_cert_file", cfg.GetString("Certs.ServerCrt"), "Path to the CRT/PEM file.")
@@ -58,7 +50,7 @@ func serveGrpc() error {
 	enableTls := cfg.GetBool("TLSEnabled")
 
 	port := 9090
-	if *enableTls {
+	if enableTls {
 		port = 9443
 	}
 
@@ -92,12 +84,16 @@ func serveWeb() error {
 	r := gin.Default()
 	sc := cfg.Sub("Session")
 	oc := sc.Sub("Options")
-	store := sessions.NewRedosStore(10, "tcp", "127.0.0.1:6379", sc.GetString('Password'), []byte(sc.GetString('Secret1'), sc.GetString("Secret2")))
+	store := sessions.NewRedosStore(10, "tcp", "127.0.0.1:6379", sc.GetString('P
+	assword
+	'), []byte(sc.GetString('S
+	ecret1
+	'), sc.GetString("Secret2")))
 	opts := sessions.Options{
-		Path: oc.GetString("Path"),
-		Domain: oc.GetString("Domain"),
-		MaxAge: oc.GetInt("MaxAge"),
-		Secure: oc.GetBool("Secure"),
+		Path:     oc.GetString("Path"),
+		Domain:   oc.GetString("Domain"),
+		MaxAge:   oc.GetInt("MaxAge"),
+		Secure:   oc.GetBool("Secure"),
 		HttpOnly: oc.GetBool("HttpOnly"),
 	}
 	store.Options(opts)
@@ -116,7 +112,8 @@ func serveWeb() error {
 }
 
 func main() {
-	g errgroup.Group
+	g
+	errgroup.Group
 
 	flag.Parse()
 
@@ -127,4 +124,3 @@ func main() {
 		log.Fatalf("failed starting http server: %v", err)
 	}
 }
-
