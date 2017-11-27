@@ -14,7 +14,11 @@
 		SearchOptions
 		ClockRequest
 		TimeSheetRequest
+		TSStatusResponse
 		TimeEntry
+		EmailOrId
+		LockUserRequest
+		DisableUserRequest
 		DeleteUserRequest
 		DeleteUserResponse
 		GetUserRequest
