@@ -24,12 +24,28 @@ export namespace Accounts {
     static readonly requestType = user_pb.GetUsersRequest;
     static readonly responseType = user_pb.User;
   }
+  export class DisableUser {
+    static readonly methodName = "DisableUser";
+    static readonly service = Accounts;
+    static readonly requestStream = false;
+    static readonly responseStream = false;
+    static readonly requestType = user_pb.DisableUserRequest;
+    static readonly responseType = common_pb.SimpleResponse;
+  }
   export class DeleteUser {
     static readonly methodName = "DeleteUser";
     static readonly service = Accounts;
     static readonly requestStream = false;
     static readonly responseStream = false;
     static readonly requestType = user_pb.DeleteUserRequest;
-    static readonly responseType = user_pb.DeleteUserResponse;
+    static readonly responseType = common_pb.SimpleResponse;
+  }
+  export class LockUser {
+    static readonly methodName = "LockUser";
+    static readonly service = Accounts;
+    static readonly requestStream = false;
+    static readonly responseStream = false;
+    static readonly requestType = user_pb.LockUserRequest;
+    static readonly responseType = common_pb.SimpleResponse;
   }
 }

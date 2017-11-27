@@ -5,7 +5,7 @@ import * as jspb from "google-protobuf";
 import * as common_pb from "./common_pb";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 
-export class DeleteUserRequest extends jspb.Message {
+export class EmailOrId extends jspb.Message {
   hasEmail(): boolean;
   clearEmail(): void;
   getEmail(): string;
@@ -16,7 +16,80 @@ export class DeleteUserRequest extends jspb.Message {
   getUserid(): number;
   setUserid(value: number): void;
 
-  getUserIdentCase(): DeleteUserRequest.UserIdentCase;
+  getUserIdentCase(): EmailOrId.UserIdentCase;
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): EmailOrId.AsObject;
+  static toObject(includeInstance: boolean, msg: EmailOrId): EmailOrId.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: EmailOrId, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): EmailOrId;
+  static deserializeBinaryFromReader(message: EmailOrId, reader: jspb.BinaryReader): EmailOrId;
+}
+
+export namespace EmailOrId {
+  export type AsObject = {
+    email: string,
+    userid: number,
+  }
+
+  export enum UserIdentCase {
+    USERIDENT_NOT_SET = 0,
+    EMAIL = 1,
+    USERID = 2,
+  }
+}
+
+export class LockUserRequest extends jspb.Message {
+  hasIdent(): boolean;
+  clearIdent(): void;
+  getIdent(): EmailOrId | undefined;
+  setIdent(value?: EmailOrId): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): LockUserRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: LockUserRequest): LockUserRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: LockUserRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LockUserRequest;
+  static deserializeBinaryFromReader(message: LockUserRequest, reader: jspb.BinaryReader): LockUserRequest;
+}
+
+export namespace LockUserRequest {
+  export type AsObject = {
+    ident?: EmailOrId.AsObject,
+  }
+}
+
+export class DisableUserRequest extends jspb.Message {
+  hasIdent(): boolean;
+  clearIdent(): void;
+  getIdent(): EmailOrId | undefined;
+  setIdent(value?: EmailOrId): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DisableUserRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DisableUserRequest): DisableUserRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: DisableUserRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DisableUserRequest;
+  static deserializeBinaryFromReader(message: DisableUserRequest, reader: jspb.BinaryReader): DisableUserRequest;
+}
+
+export namespace DisableUserRequest {
+  export type AsObject = {
+    ident?: EmailOrId.AsObject,
+  }
+}
+
+export class DeleteUserRequest extends jspb.Message {
+  hasIdent(): boolean;
+  clearIdent(): void;
+  getIdent(): EmailOrId | undefined;
+  setIdent(value?: EmailOrId): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeleteUserRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DeleteUserRequest): DeleteUserRequest.AsObject;
@@ -29,14 +102,7 @@ export class DeleteUserRequest extends jspb.Message {
 
 export namespace DeleteUserRequest {
   export type AsObject = {
-    email: string,
-    userid: number,
-  }
-
-  export enum UserIdentCase {
-    USERIDENT_NOT_SET = 0,
-    EMAIL = 1,
-    USERID = 2,
+    ident?: EmailOrId.AsObject,
   }
 }
 
@@ -65,17 +131,11 @@ export namespace DeleteUserResponse {
 }
 
 export class GetUserRequest extends jspb.Message {
-  hasEmail(): boolean;
-  clearEmail(): void;
-  getEmail(): string;
-  setEmail(value: string): void;
+  hasIdent(): boolean;
+  clearIdent(): void;
+  getIdent(): EmailOrId | undefined;
+  setIdent(value?: EmailOrId): void;
 
-  hasUserid(): boolean;
-  clearUserid(): void;
-  getUserid(): number;
-  setUserid(value: number): void;
-
-  getUserIdentCase(): GetUserRequest.UserIdentCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetUserRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetUserRequest): GetUserRequest.AsObject;
@@ -88,14 +148,7 @@ export class GetUserRequest extends jspb.Message {
 
 export namespace GetUserRequest {
   export type AsObject = {
-    email: string,
-    userid: number,
-  }
-
-  export enum UserIdentCase {
-    USERIDENT_NOT_SET = 0,
-    EMAIL = 1,
-    USERID = 2,
+    ident?: EmailOrId.AsObject,
   }
 }
 

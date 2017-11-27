@@ -15,8 +15,11 @@ var common_pb = require('./common_pb.js');
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 goog.exportSymbol('proto.api.DeleteUserRequest', null, global);
 goog.exportSymbol('proto.api.DeleteUserResponse', null, global);
+goog.exportSymbol('proto.api.DisableUserRequest', null, global);
+goog.exportSymbol('proto.api.EmailOrId', null, global);
 goog.exportSymbol('proto.api.GetUserRequest', null, global);
 goog.exportSymbol('proto.api.GetUsersRequest', null, global);
+goog.exportSymbol('proto.api.LockUserRequest', null, global);
 goog.exportSymbol('proto.api.User', null, global);
 
 /**
@@ -29,12 +32,12 @@ goog.exportSymbol('proto.api.User', null, global);
  * @extends {jspb.Message}
  * @constructor
  */
-proto.api.DeleteUserRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, proto.api.DeleteUserRequest.oneofGroups_);
+proto.api.EmailOrId = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, proto.api.EmailOrId.oneofGroups_);
 };
-goog.inherits(proto.api.DeleteUserRequest, jspb.Message);
+goog.inherits(proto.api.EmailOrId, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.api.DeleteUserRequest.displayName = 'proto.api.DeleteUserRequest';
+  proto.api.EmailOrId.displayName = 'proto.api.EmailOrId';
 }
 /**
  * Oneof group definitions for this message. Each group defines the field
@@ -44,24 +47,539 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.api.DeleteUserRequest.oneofGroups_ = [[1,2]];
+proto.api.EmailOrId.oneofGroups_ = [[1,2]];
 
 /**
  * @enum {number}
  */
-proto.api.DeleteUserRequest.UseridentCase = {
+proto.api.EmailOrId.UseridentCase = {
   USERIDENT_NOT_SET: 0,
   EMAIL: 1,
   USERID: 2
 };
 
 /**
- * @return {proto.api.DeleteUserRequest.UseridentCase}
+ * @return {proto.api.EmailOrId.UseridentCase}
  */
-proto.api.DeleteUserRequest.prototype.getUseridentCase = function() {
-  return /** @type {proto.api.DeleteUserRequest.UseridentCase} */(jspb.Message.computeOneofCase(this, proto.api.DeleteUserRequest.oneofGroups_[0]));
+proto.api.EmailOrId.prototype.getUseridentCase = function() {
+  return /** @type {proto.api.EmailOrId.UseridentCase} */(jspb.Message.computeOneofCase(this, proto.api.EmailOrId.oneofGroups_[0]));
 };
 
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.EmailOrId.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.EmailOrId.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.EmailOrId} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.api.EmailOrId.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    email: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    userid: jspb.Message.getFieldWithDefault(msg, 2, 0)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.EmailOrId}
+ */
+proto.api.EmailOrId.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.EmailOrId;
+  return proto.api.EmailOrId.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.EmailOrId} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.EmailOrId}
+ */
+proto.api.EmailOrId.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setEmail(value);
+      break;
+    case 2:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setUserid(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.EmailOrId.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.api.EmailOrId.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.api.EmailOrId} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.api.EmailOrId.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = /** @type {string} */ (jspb.Message.getField(message, 1));
+  if (f != null) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
+    writer.writeInt64(
+      2,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string Email = 1;
+ * @return {string}
+ */
+proto.api.EmailOrId.prototype.getEmail = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.api.EmailOrId.prototype.setEmail = function(value) {
+  jspb.Message.setOneofField(this, 1, proto.api.EmailOrId.oneofGroups_[0], value);
+};
+
+
+proto.api.EmailOrId.prototype.clearEmail = function() {
+  jspb.Message.setOneofField(this, 1, proto.api.EmailOrId.oneofGroups_[0], undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.api.EmailOrId.prototype.hasEmail = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional int64 UserID = 2;
+ * @return {number}
+ */
+proto.api.EmailOrId.prototype.getUserid = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/** @param {number} value */
+proto.api.EmailOrId.prototype.setUserid = function(value) {
+  jspb.Message.setOneofField(this, 2, proto.api.EmailOrId.oneofGroups_[0], value);
+};
+
+
+proto.api.EmailOrId.prototype.clearUserid = function() {
+  jspb.Message.setOneofField(this, 2, proto.api.EmailOrId.oneofGroups_[0], undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.api.EmailOrId.prototype.hasUserid = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.api.LockUserRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.api.LockUserRequest, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.LockUserRequest.displayName = 'proto.api.LockUserRequest';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.LockUserRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.LockUserRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.LockUserRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.api.LockUserRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    ident: (f = msg.getIdent()) && proto.api.EmailOrId.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.LockUserRequest}
+ */
+proto.api.LockUserRequest.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.LockUserRequest;
+  return proto.api.LockUserRequest.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.LockUserRequest} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.LockUserRequest}
+ */
+proto.api.LockUserRequest.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.api.EmailOrId;
+      reader.readMessage(value,proto.api.EmailOrId.deserializeBinaryFromReader);
+      msg.setIdent(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.LockUserRequest.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.api.LockUserRequest.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.api.LockUserRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.api.LockUserRequest.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getIdent();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.api.EmailOrId.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional EmailOrId Ident = 1;
+ * @return {?proto.api.EmailOrId}
+ */
+proto.api.LockUserRequest.prototype.getIdent = function() {
+  return /** @type{?proto.api.EmailOrId} */ (
+    jspb.Message.getWrapperField(this, proto.api.EmailOrId, 1));
+};
+
+
+/** @param {?proto.api.EmailOrId|undefined} value */
+proto.api.LockUserRequest.prototype.setIdent = function(value) {
+  jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+proto.api.LockUserRequest.prototype.clearIdent = function() {
+  this.setIdent(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.api.LockUserRequest.prototype.hasIdent = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.api.DisableUserRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.api.DisableUserRequest, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.DisableUserRequest.displayName = 'proto.api.DisableUserRequest';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.DisableUserRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.DisableUserRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.DisableUserRequest} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.api.DisableUserRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    ident: (f = msg.getIdent()) && proto.api.EmailOrId.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.DisableUserRequest}
+ */
+proto.api.DisableUserRequest.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.DisableUserRequest;
+  return proto.api.DisableUserRequest.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.DisableUserRequest} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.DisableUserRequest}
+ */
+proto.api.DisableUserRequest.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.api.EmailOrId;
+      reader.readMessage(value,proto.api.EmailOrId.deserializeBinaryFromReader);
+      msg.setIdent(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.DisableUserRequest.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.api.DisableUserRequest.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.api.DisableUserRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.api.DisableUserRequest.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getIdent();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.api.EmailOrId.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional EmailOrId Ident = 1;
+ * @return {?proto.api.EmailOrId}
+ */
+proto.api.DisableUserRequest.prototype.getIdent = function() {
+  return /** @type{?proto.api.EmailOrId} */ (
+    jspb.Message.getWrapperField(this, proto.api.EmailOrId, 1));
+};
+
+
+/** @param {?proto.api.EmailOrId|undefined} value */
+proto.api.DisableUserRequest.prototype.setIdent = function(value) {
+  jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+proto.api.DisableUserRequest.prototype.clearIdent = function() {
+  this.setIdent(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.api.DisableUserRequest.prototype.hasIdent = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.api.DeleteUserRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.api.DeleteUserRequest, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.DeleteUserRequest.displayName = 'proto.api.DeleteUserRequest';
+}
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -91,8 +609,7 @@ proto.api.DeleteUserRequest.prototype.toObject = function(opt_includeInstance) {
  */
 proto.api.DeleteUserRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    email: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    userid: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    ident: (f = msg.getIdent()) && proto.api.EmailOrId.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -130,12 +647,9 @@ proto.api.DeleteUserRequest.deserializeBinaryFromReader = function(msg, reader) 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEmail(value);
-      break;
-    case 2:
-      var value = /** @type {number} */ (reader.readInt64());
-      msg.setUserid(value);
+      var value = new proto.api.EmailOrId;
+      reader.readMessage(value,proto.api.EmailOrId.deserializeBinaryFromReader);
+      msg.setIdent(value);
       break;
     default:
       reader.skipField();
@@ -166,40 +680,35 @@ proto.api.DeleteUserRequest.prototype.serializeBinary = function() {
  */
 proto.api.DeleteUserRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = /** @type {string} */ (jspb.Message.getField(message, 1));
+  f = message.getIdent();
   if (f != null) {
-    writer.writeString(
+    writer.writeMessage(
       1,
-      f
-    );
-  }
-  f = /** @type {number} */ (jspb.Message.getField(message, 2));
-  if (f != null) {
-    writer.writeInt64(
-      2,
-      f
+      f,
+      proto.api.EmailOrId.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional string Email = 1;
- * @return {string}
+ * optional EmailOrId Ident = 1;
+ * @return {?proto.api.EmailOrId}
  */
-proto.api.DeleteUserRequest.prototype.getEmail = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.api.DeleteUserRequest.prototype.getIdent = function() {
+  return /** @type{?proto.api.EmailOrId} */ (
+    jspb.Message.getWrapperField(this, proto.api.EmailOrId, 1));
 };
 
 
-/** @param {string} value */
-proto.api.DeleteUserRequest.prototype.setEmail = function(value) {
-  jspb.Message.setOneofField(this, 1, proto.api.DeleteUserRequest.oneofGroups_[0], value);
+/** @param {?proto.api.EmailOrId|undefined} value */
+proto.api.DeleteUserRequest.prototype.setIdent = function(value) {
+  jspb.Message.setWrapperField(this, 1, value);
 };
 
 
-proto.api.DeleteUserRequest.prototype.clearEmail = function() {
-  jspb.Message.setOneofField(this, 1, proto.api.DeleteUserRequest.oneofGroups_[0], undefined);
+proto.api.DeleteUserRequest.prototype.clearIdent = function() {
+  this.setIdent(undefined);
 };
 
 
@@ -207,37 +716,8 @@ proto.api.DeleteUserRequest.prototype.clearEmail = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.api.DeleteUserRequest.prototype.hasEmail = function() {
+proto.api.DeleteUserRequest.prototype.hasIdent = function() {
   return jspb.Message.getField(this, 1) != null;
-};
-
-
-/**
- * optional int64 UserID = 2;
- * @return {number}
- */
-proto.api.DeleteUserRequest.prototype.getUserid = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
-};
-
-
-/** @param {number} value */
-proto.api.DeleteUserRequest.prototype.setUserid = function(value) {
-  jspb.Message.setOneofField(this, 2, proto.api.DeleteUserRequest.oneofGroups_[0], value);
-};
-
-
-proto.api.DeleteUserRequest.prototype.clearUserid = function() {
-  jspb.Message.setOneofField(this, 2, proto.api.DeleteUserRequest.oneofGroups_[0], undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
-proto.api.DeleteUserRequest.prototype.hasUserid = function() {
-  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -424,38 +904,12 @@ proto.api.DeleteUserResponse.prototype.setMessage = function(value) {
  * @constructor
  */
 proto.api.GetUserRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, proto.api.GetUserRequest.oneofGroups_);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.api.GetUserRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   proto.api.GetUserRequest.displayName = 'proto.api.GetUserRequest';
 }
-/**
- * Oneof group definitions for this message. Each group defines the field
- * numbers belonging to that group. When of these fields' value is set, all
- * other fields in the group are cleared. During deserialization, if multiple
- * fields are encountered for a group, only the last value seen will be kept.
- * @private {!Array<!Array<number>>}
- * @const
- */
-proto.api.GetUserRequest.oneofGroups_ = [[1,2]];
-
-/**
- * @enum {number}
- */
-proto.api.GetUserRequest.UseridentCase = {
-  USERIDENT_NOT_SET: 0,
-  EMAIL: 1,
-  USERID: 2
-};
-
-/**
- * @return {proto.api.GetUserRequest.UseridentCase}
- */
-proto.api.GetUserRequest.prototype.getUseridentCase = function() {
-  return /** @type {proto.api.GetUserRequest.UseridentCase} */(jspb.Message.computeOneofCase(this, proto.api.GetUserRequest.oneofGroups_[0]));
-};
-
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -485,8 +939,7 @@ proto.api.GetUserRequest.prototype.toObject = function(opt_includeInstance) {
  */
 proto.api.GetUserRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    email: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    userid: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    ident: (f = msg.getIdent()) && proto.api.EmailOrId.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -524,12 +977,9 @@ proto.api.GetUserRequest.deserializeBinaryFromReader = function(msg, reader) {
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEmail(value);
-      break;
-    case 2:
-      var value = /** @type {number} */ (reader.readInt64());
-      msg.setUserid(value);
+      var value = new proto.api.EmailOrId;
+      reader.readMessage(value,proto.api.EmailOrId.deserializeBinaryFromReader);
+      msg.setIdent(value);
       break;
     default:
       reader.skipField();
@@ -560,40 +1010,35 @@ proto.api.GetUserRequest.prototype.serializeBinary = function() {
  */
 proto.api.GetUserRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = /** @type {string} */ (jspb.Message.getField(message, 1));
+  f = message.getIdent();
   if (f != null) {
-    writer.writeString(
+    writer.writeMessage(
       1,
-      f
-    );
-  }
-  f = /** @type {number} */ (jspb.Message.getField(message, 2));
-  if (f != null) {
-    writer.writeInt64(
-      2,
-      f
+      f,
+      proto.api.EmailOrId.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional string Email = 1;
- * @return {string}
+ * optional EmailOrId Ident = 1;
+ * @return {?proto.api.EmailOrId}
  */
-proto.api.GetUserRequest.prototype.getEmail = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.api.GetUserRequest.prototype.getIdent = function() {
+  return /** @type{?proto.api.EmailOrId} */ (
+    jspb.Message.getWrapperField(this, proto.api.EmailOrId, 1));
 };
 
 
-/** @param {string} value */
-proto.api.GetUserRequest.prototype.setEmail = function(value) {
-  jspb.Message.setOneofField(this, 1, proto.api.GetUserRequest.oneofGroups_[0], value);
+/** @param {?proto.api.EmailOrId|undefined} value */
+proto.api.GetUserRequest.prototype.setIdent = function(value) {
+  jspb.Message.setWrapperField(this, 1, value);
 };
 
 
-proto.api.GetUserRequest.prototype.clearEmail = function() {
-  jspb.Message.setOneofField(this, 1, proto.api.GetUserRequest.oneofGroups_[0], undefined);
+proto.api.GetUserRequest.prototype.clearIdent = function() {
+  this.setIdent(undefined);
 };
 
 
@@ -601,37 +1046,8 @@ proto.api.GetUserRequest.prototype.clearEmail = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.api.GetUserRequest.prototype.hasEmail = function() {
+proto.api.GetUserRequest.prototype.hasIdent = function() {
   return jspb.Message.getField(this, 1) != null;
-};
-
-
-/**
- * optional int64 UserID = 2;
- * @return {number}
- */
-proto.api.GetUserRequest.prototype.getUserid = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
-};
-
-
-/** @param {number} value */
-proto.api.GetUserRequest.prototype.setUserid = function(value) {
-  jspb.Message.setOneofField(this, 2, proto.api.GetUserRequest.oneofGroups_[0], value);
-};
-
-
-proto.api.GetUserRequest.prototype.clearUserid = function() {
-  jspb.Message.setOneofField(this, 2, proto.api.GetUserRequest.oneofGroups_[0], undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
-proto.api.GetUserRequest.prototype.hasUserid = function() {
-  return jspb.Message.getField(this, 2) != null;
 };
 
 

@@ -4,6 +4,7 @@
 import * as jspb from "google-protobuf";
 import * as common_pb from "./common_pb";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
+import * as google_protobuf_duration_pb from "google-protobuf/google/protobuf/duration_pb";
 
 export class ClockRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
@@ -71,6 +72,43 @@ export namespace TimeSheetRequest {
     USERIDENT_NOT_SET = 0,
     EMAIL = 4,
     USERID = 5,
+  }
+}
+
+export class TSStatusResponse extends jspb.Message {
+  getState(): TSStatusResponse.Status;
+  setState(value: TSStatusResponse.Status): void;
+
+  hasTimestamp(): boolean;
+  clearTimestamp(): void;
+  getTimestamp(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTimestamp(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasLastworked(): boolean;
+  clearLastworked(): void;
+  getLastworked(): google_protobuf_duration_pb.Duration | undefined;
+  setLastworked(value?: google_protobuf_duration_pb.Duration): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TSStatusResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: TSStatusResponse): TSStatusResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: TSStatusResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TSStatusResponse;
+  static deserializeBinaryFromReader(message: TSStatusResponse, reader: jspb.BinaryReader): TSStatusResponse;
+}
+
+export namespace TSStatusResponse {
+  export type AsObject = {
+    state: TSStatusResponse.Status,
+    timestamp?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    lastworked?: google_protobuf_duration_pb.Duration.AsObject,
+  }
+
+  export enum Status {
+    ClockedOut = 0,
+    ClockedIn = 1,
   }
 }
 
