@@ -1,7 +1,7 @@
+package db
 
 import (
 	"log"
-	"github.com/bline/gotime/gotime.go"
 	"github.com/bline/gotime/config"
 
 	"github.com/jinzhu/gorm"
@@ -11,9 +11,9 @@ import (
 
 var db *gorm.DB
 
-func New() (*gorm.DB, error) {
+func Open() (*gorm.DB, error) {
 	c := config.GetConfig()
-	err error
+	var err error
 	if db != nil {
 		return db, err
 	}
@@ -27,7 +27,8 @@ func GetDB() *gorm.DB {
 	return db
 }
 
-func CloseDB() {
+func Close() {
 	db.Close()
+	db = nil
 }
 
