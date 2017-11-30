@@ -4,6 +4,8 @@ import (
 	"log"
 
 	"github.com/spf13/viper"
+	"os"
+	"path"
 )
 
 type Config = viper.Viper
@@ -25,13 +27,13 @@ func New(env string) (*Config, error) {
 	config = viper.New()
 	config.SetConfigType("yaml")
 	config.SetConfigName(env)
-	if env == "test" {
-		config.AddConfigPath("../config/")
-	} else {
-		config.AddConfigPath("config/")
-	}
-	err = config.ReadInConfig()
-	if err != nil {
+	home := os.Getenv("HOME")
+	assetsRoot := path.Join(home, ".config", "gotime")
+	confDirLocal := path.Join(assetsRoot, "config")
+	confDirSystem := "/etc/gotime"
+	config.AddConfigPath(confDirLocal)
+	config.AddConfigPath(confDirSystem)
+	if err = config.ReadInConfig(); err != nil {
 		log.Fatal("error on parsing configuration file")
 	}
 	setDefaults(config)
