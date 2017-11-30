@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"google.golang.org/grpc"
@@ -16,10 +17,14 @@ import (
 	"github.com/bline/gotime/api/proto"
 	"github.com/bline/gotime/config"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/bline/gotime"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"strings"
 )
 
 func getEnv() string {
-	var env string = "development"
+	var env = "development"
 	val, ok := os.LookupEnv("GOTIME_ENV")
 	if ok {
 		env = val
@@ -36,8 +41,8 @@ func getCfg(env string) *config.Config {
 }
 
 var (
-	env                = getEnv()
-	cfg *config.Config = getCfg(env)
+	env = getEnv()
+	cfg = getCfg(env)
 )
 
 var (
@@ -47,16 +52,13 @@ var (
 )
 
 func serveGrpc() error {
-	enableTls := cfg.GetBool("TLSEnabled")
+	enableTls := cfg.GetBool("Grpc.EnableTls")
 
-	port := 9090
-	if enableTls {
-		port = 9443
-	}
+	port := cfg.GetInt("Grpc.Port")
 
 	grpcServer := grpc.NewServer()
-	api.RegisterTimeSheetServer(grpcServer, &timesheetService{})
-	api.RegisterAccountsServer(grpcServer, &accountsService{})
+	api.RegisterTimeSheetServer(grpcServer, &gotime.TimeSheetService{})
+	api.RegisterAccountsServer(grpcServer, &gotime.AccountsService{})
 	grpclog.SetLogger(log.New(os.Stdout, "grpc: ", log.LstdFlags))
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
@@ -67,28 +69,41 @@ func serveGrpc() error {
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: http.HandlerFunc(handler),
 	}
+	log.Printf("Grpc Listening on Port %d", port)
 	if enableTls {
-		return httpServer.ListenAndServeTLS(tlsCertFilePath, tlsKeyFilePath)
+		return httpServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath)
 	} else {
 		return httpServer.ListenAndServe()
 	}
 }
 
 func serveWeb() error {
-	enableSsl := cfg.GetBool("SSLEnabled")
+	enableTls := cfg.GetBool("Http.EnableTls")
 
-	port := 8080
-	if *enableSsl {
-		port = 8443
-	}
+	port := cfg.GetInt("Http.Port")
+
 	r := gin.Default()
 	sc := cfg.Sub("Session")
 	oc := sc.Sub("Options")
-	store := sessions.NewRedosStore(10, "tcp", "127.0.0.1:6379", sc.GetString('P
-	assword
-	'), []byte(sc.GetString('S
-	ecret1
-	'), sc.GetString("Secret2")))
+
+	secret1 := sc.GetString("secret1")
+	secret2 := sc.GetString("secret2")
+	var store sessions.Store
+	if sc.GetBool("EnableRedis") {
+		rc := sc.Sub("Redis")
+		redisProto := rc.GetString("Protocol")
+		redisAddr := rc.GetString("Address")
+		redisPassword := rc.GetString("Password")
+		var err error
+		store, err = sessions.NewRedisStore(10, redisProto, redisAddr, redisPassword, []byte(secret1), []byte(secret2))
+		if err != nil {
+			log.Printf("Redis connection failed: %v", err)
+			// Fall back to cookies
+			store = sessions.NewCookieStore([]byte(secret1), []byte(secret2))
+		}
+	} else {
+		store = sessions.NewCookieStore([]byte(secret1), []byte(secret2))
+	}
 	opts := sessions.Options{
 		Path:     oc.GetString("Path"),
 		Domain:   oc.GetString("Domain"),
@@ -97,23 +112,84 @@ func serveWeb() error {
 		HttpOnly: oc.GetBool("HttpOnly"),
 	}
 	store.Options(opts)
-	r.Use(sessions.Sessions("gotime-auth", store))
-	setupRoutes(r)
+	r.Use(sessions.Sessions("gotime-session", store))
+
+	r.GET("/login", func(ctx *gin.Context) {
+
+	})
+	r.GET("/oauth2callback", func(ctx *gin.Context) {
+
+	})
+	r.Use(authorizeRequest())
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: http.HandlerFunc(handler),
+		Handler: r,
 	}
-	if enableSsl {
-		return httpServer.ListenAndServeTLS(tlsCertFilePath, tlsKeyFilePath)
+	strProto := "HTTP"
+	if enableTls {
+		strProto += "S"
+	}
+	log.Printf("%s Listening on Port %d", strProto, port)
+	if enableTls {
+		return httpServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath)
 	} else {
 		return httpServer.ListenAndServe()
 	}
 }
 
+var oacfg *oauth2.Config
+
+func init() {
+	googleAuthScopes := []string{"profile", "email"}
+	domain := cfg.GetString("Domain")
+	prefix := cfg.GetString("PathPrefix")
+	redirectUrl := "https://" + domain
+	if prefix != "" {
+		redirectUrl += prefix
+		if !strings.HasSuffix(prefix, "/") {
+			redirectUrl += "/"
+		}
+
+	} else {
+		redirectUrl += "/"
+	}
+	redirectUrl += "oauth2callback"
+	oacfg = &oauth2.Config{
+		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		RedirectURL:  redirectUrl,
+		Scopes:       googleAuthScopes,
+		Endpoint:     google.Endpoint,
+	}
+}
+
+func authorizeRequest() gin.HandlerFunc {
+	return func (ctx *gin.Context) {
+		log.Printf("auth Req: %v", ctx.Request.RequestURI)
+		log.Printf("new: " + "https://" + ctx.Request.Host + ctx.Request.RequestURI)
+		session := sessions.Default(ctx)
+		token := session.Get("token")
+		if token == nil {
+			rawUrl := "https://" + ctx.Request.Host + ctx.Request.RequestURI
+			newUrl, err := url.Parse(rawUrl)
+			if err != nil {
+				log.Fatalf("Failed Parsing: %s", rawUrl)
+			}
+			curUrl := url.QueryEscape(newUrl.String())
+			authUrl := "https://" + ctx.Request.Host + "/login?return=" + curUrl
+			ctx.Redirect(http.StatusFound, authUrl)
+			ctx.Abort()
+		} else {
+			// XXX validate token
+			ctx.Next()
+		}
+
+	}
+}
+
 func main() {
-	g
-	errgroup.Group
+	var g errgroup.Group
 
 	flag.Parse()
 

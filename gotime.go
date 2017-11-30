@@ -1,7 +1,9 @@
 package gotime
 
 import (
-  "time"
+	"time"
+
+	"github.com/bline/gotime/api/proto"
 )
 
 type UserID int
@@ -17,9 +19,9 @@ type User struct {
 }
 
 const (
-  StateClockedOut = 0
-  StateClockedIn  = 1
-  StateOnBreak    = 3
+	StateClockedOut = 0
+	StateClockedIn  = 1
+	StateOnBreak    = 3
 )
 
 type TimeEntry struct {
@@ -28,31 +30,3 @@ type TimeEntry struct {
 	Timestamp  time.Time       `sql:"type:bigint"`
 	State      int
 }
-
-type Client interface {
-  OAuthService() OAuthService
-  UserService() UserService
-  TimeSheetService() TimeSheetService
-}
-
-type TimeEntryService interface {
-  TimeEntries(id UserID, startDate time.Time, endDate time.Time) ([]TimeEntry, error)
-  CreateTimeEntry(timesheet *TimeEntry) error
-}
-
-
-type UserService interface {
-	GetUser(context.Context, *api.GetUserRequest) (*api.User, error)
-	GetUsers(*api.GetUsersRequest) error
-	DeleteUser(*api.DeleteUserRequest) error
-	DisableUser(*api.DisableUserRequest) error
-	LockUser(*api.LockUserRequest) error
-}
-
-type TimeSheetService interface {
-	ClockIn () error
-	ClockOut () error
-	GetCurrentStatus () api.TSStatusResponse
-	GetEntries (r api.TimeSheetRequest) error
-}
-
