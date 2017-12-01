@@ -2,22 +2,22 @@ package gotime
 
 import (
 	"time"
+	"github.com/jinzhu/gorm"
 )
 
-type UserID int
-type TimeEntryID int
+type UserID uint
 
 type User struct {
-	ID         UserID     `gorm:"primary_key", json:"id"`
-	GoogleID    string    `sql:"type:char(40)"`
-	Email       string    `sql:"type:char(255)"`
-	LastLogin   time.Time `sql:"type:bigint"`
-	IsDisabled  bool
-	IsAdmin     bool
-	DisplayName string    `sql:"type: char(150)"`
-	GivenName   string    `sql:"type: char(100)"`
-	FamilyName  string    `sql:"type: char(150)"`
-	Picture     string    `sql:"type: char(200)"`
+	gorm.Model
+	GoogleID    string      `sql:"type:char(40)" json:"google_id"`
+	Email       string      `sql:"type:char(255)" json:"email"`
+	DisplayName string      `sql:"type: char(150)" json:"display_name"`
+	GivenName   string      `sql:"type: char(100)" json:"given_name"`
+	FamilyName  string      `sql:"type: char(150)" json:"family_name"`
+	Picture     string      `sql:"type: char(200)" json:"picture"`
+	LastLogin   time.Time   `sql:"type:bigint" json:"last_login"`
+	IsAdmin     bool        `json:"is_admin"`
+	TimeEntries []TimeEntry `gorm:"ForeignKey:UserID" json:"-"`
 }
 
 const (
@@ -27,8 +27,8 @@ const (
 )
 
 type TimeEntry struct {
-	ID         TimeEntryID     `gorm:"primary_key"`
-	UserID     UserID
+	gorm.Model
+	UserID     UserID          `json:"user_id"`
 	Timestamp  time.Time       `sql:"type:bigint"`
 	State      int
 }
