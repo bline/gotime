@@ -63,7 +63,7 @@ func verifyToken(token string) (*googleAuthIDTokenVerifier.ClaimSet, error) {
 	if err != nil {
 		return nil, err
 	}
-	claimSet, err := googleAuthIDTokenVerifier.Decode(TOKEN)
+	claimSet, err := googleAuthIDTokenVerifier.Decode(token)
 	// claimSet.Iss,claimSet.Email ... (See claimset.go)
 	// XXX get hd from PrivateClaim?
 	if !strings.HasSuffix(claimSet.Email, "@shambhalamountain.org") {
