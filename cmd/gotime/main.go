@@ -21,6 +21,8 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"strings"
+	"path/filepath"
+	"github.com/Joker/jade"
 )
 
 func getEnv() string {
@@ -155,42 +157,86 @@ func init() {
 	}
 }
 
+func abortRequest(ctx *gin.Context) {
+	r := ctx.Request
+	if r.ProtoMajor == 2 && strings.HasPrefix(r.Header.Get("Content-Type"), "application/grpc") {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+	} else {
+		rawUrl := "https://" + r.Host + r.RequestURI
+		newUrl, err := url.Parse(rawUrl)
+		if err != nil {
+			log.Fatalf("Failed Parsing: %s", rawUrl)
+		}
+		curUrl := url.QueryEscape(newUrl.String())
+		authUrl := "https://" + r.Host + "/login?return=" + curUrl
+		ctx.Redirect(http.StatusFound, authUrl)
+		ctx.Abort()
+	}
+}
+
 func authorizeRequest() gin.HandlerFunc {
 	return func (ctx *gin.Context) {
-		handleError := func(ctx *gin.Context) {
-			r := ctx.Request
-			if r.ProtoMajor == 2 && strings.HasPrefix(r.Header.Get("Content-Type"), "application/grpc") {
-				ctx.AbortWithStatus(http.StatusUnauthorized)
-			} else {
-				rawUrl := "https://" + r.Host + r.RequestURI
-				newUrl, err := url.Parse(rawUrl)
-				if err != nil {
-					log.Fatalf("Failed Parsing: %s", rawUrl)
-				}
-				curUrl := url.QueryEscape(newUrl.String())
-				authUrl := "https://" + r.Host + "/login?return=" + curUrl
-				ctx.Redirect(http.StatusFound, authUrl)
-				ctx.Abort()
-			}
-		}
 		log.Printf("auth Req: %v", ctx.Request.RequestURI)
 		log.Printf("new: " + "https://" + ctx.Request.Host + ctx.Request.RequestURI)
 		session := sessions.Default(ctx)
-		token := session.Get("token").(string)
-		if token == "" {
-			handleError(ctx)
+		payload := session.Get("token")
+		if payload == nil {
+			abortRequest(ctx)
 		} else {
-			// XXX validate token
+			token := fmt.Sprintf("%s", payload)
+			// validates token, creates user struct from claimset
 			user, err := gotime.NewUserFromIDToken(token)
 			if err != nil {
-				handleError(ctx)
+				abortRequest(ctx)
+			} else {
+				session.Set("User", user)
+				session.Save()
+				ctx.Next()
 			}
-			session.Set("UserID", user.ID)
-			session.Set("UserEmail", user.Email)
-			ctx.Next()
+
 		}
 
 	}
+}
+
+func loginEndpoint(ctx *gin.Context) {
+	ctx.HTML(200, "")
+}
+
+func oauth2callbackEndpoint(ctx gin.Context) {
+	token := ctx.PostForm("idtoken")
+	user, err := gotime.NewUserFromIDToken(token)
+	if err != nil {
+		ctx.HTML(http.StatusOK, "login.html", gin.H{"error": err})
+	}
+}
+
+func loadHTMLString(engine *gin.Engine, name, html string) {
+	// Using template instance to run New copies Delims and Funcs
+	templ := template.Must(engine.HTMLRender.Template.New(name).Parse(html))
+	engine.SetHTMLTemplate(templ)
+}
+
+func loadPugFiles(engine *gin.Engine, files ...string) {
+	for _, file := range files {
+		htmlStr, err := jade.ParseFile(file)
+		filename := filepath.Base(file)
+		if err == nil {
+			loadHTMLString(engine, filename, htmlStr)
+		} else {
+			log.Printf("Error parsing template %v: %v", file, err)
+		}
+	}
+}
+func loadPugGlob(engine *gin.Engine, glob string) {
+	matches, err := filepath.Glob(glob)
+	if err != nil {
+		log.Printf("Error loading glob %v: %v", glob, err)
+	}
+	if len(matches) > 0 {
+		loadPugFiles(engine, matches...)
+	}
+
 }
 
 func main() {
