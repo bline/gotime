@@ -20,9 +20,7 @@ import (
 	"github.com/bline/gotime"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"github.com/futurenda/google-auth-id-token-verifier"
 	"strings"
-	"errors"
 )
 
 func getEnv() string {
@@ -68,23 +66,6 @@ func getGrpcHandler() gin.HandlerFunc {
 		wrappedServer.ServeHTTP(resp, req)
 	}
 	return gin.HandlerFunc(handler)
-}
-
-func verifyToken(token string) (*googleAuthIDTokenVerifier.ClaimSet, error) {
-	v := googleAuthIDTokenVerifier.Verifier{}
-	aud := "33812767661-4a1p5lotkkveeodjehfpkucvmbpkmkhf.apps.googleusercontent.com"
-	err := v.VerifyIDToken(token, []string{
-		aud,
-	})
-	if err != nil {
-		return nil, err
-	}
-	claimSet, err := googleAuthIDTokenVerifier.Decode(TOKEN)
-	// claimSet.Iss,claimSet.Email ... (See claimset.go)
-	if !strings.HasSuffix(claimSet.Email, "@shambhalamountain.org") {
-		return nil, errors.New("must use a shambhalamountain.org email address")
-	}
-	return claimSet, nil
 }
 
 func serve() error {
