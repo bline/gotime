@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"html/template"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/bline/gotime/api/proto"
 	"github.com/bline/gotime/config"
-	"github.com/bline/gotime/db"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/bline/gotime"
 	"golang.org/x/oauth2"
@@ -70,12 +70,7 @@ func getGrpcHandler() gin.HandlerFunc {
 	return gin.HandlerFunc(handler)
 }
 
-func serve() error {
-	enableTls := cfg.GetBool("Http.EnableTls")
-
-	port := cfg.GetInt("Http.Port")
-
-	r := gin.Default()
+func sessionMiddleware(engine *gin.Engine) gin.HandlerFunc {
 	sc := cfg.Sub("Session")
 	oc := sc.Sub("Options")
 
@@ -105,15 +100,21 @@ func serve() error {
 		HttpOnly: oc.GetBool("HttpOnly"),
 	}
 	store.Options(opts)
-	r.Use(sessions.Sessions("gotime-session", store))
+	return gin.HandlerFunc(sessions.Sessions("gotime-session", store))
+}
 
-	r.GET("/login", func(ctx *gin.Context) {
+func serve() error {
+	enableTls := cfg.GetBool("Http.EnableTls")
 
-	})
-	r.GET("/oauth2callback", func(ctx *gin.Context) {
+	port := cfg.GetInt("Http.Port")
 
-	})
-	r.Use(authorizeRequest())
+	r := gin.Default()
+	r.Use(sessionMiddleware(r))
+
+	r.GET("/login", loginEndpoint)
+	r.POST("/oauth2callback", oauth2callbackEndpoint)
+
+	r.Use(authorizeRequestMiddleware())
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -130,8 +131,6 @@ func serve() error {
 		return httpServer.ListenAndServe()
 	}
 }
-
-var oacfg *oauth2.Config
 
 func init() {
 	googleAuthScopes := []string{"profile", "email"}
@@ -174,46 +173,39 @@ func abortRequest(ctx *gin.Context) {
 	}
 }
 
-func authorizeRequest() gin.HandlerFunc {
+func authorizeRequestMiddleware() gin.HandlerFunc {
 	return func (ctx *gin.Context) {
 		log.Printf("auth Req: %v", ctx.Request.RequestURI)
 		log.Printf("new: " + "https://" + ctx.Request.Host + ctx.Request.RequestURI)
 		session := sessions.Default(ctx)
-		payload := session.Get("token")
+		payload := session.Get("user")
 		if payload == nil {
 			abortRequest(ctx)
 		} else {
-			token := fmt.Sprintf("%s", payload)
-			// validates token, creates user struct from claimset
-			user, err := gotime.NewUserFromIDToken(token)
-			if err != nil {
-				abortRequest(ctx)
-			} else {
-				session.Set("User", user)
-				session.Save()
-				ctx.Next()
-			}
-
+			ctx.Next()
 		}
 
 	}
 }
 
 func loginEndpoint(ctx *gin.Context) {
-	ctx.HTML(200, "")
+	ctx.HTML(http.StatusOK, "login.pug", gin.H{})
 }
 
-func oauth2callbackEndpoint(ctx gin.Context) {
+func oauth2callbackEndpoint(ctx *gin.Context) {
 	token := ctx.PostForm("idtoken")
 	user, err := gotime.NewUserFromIDToken(token)
 	if err != nil {
-		ctx.HTML(http.StatusOK, "login.html", gin.H{"error": err})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err})
 	}
+	session := sessions.Default(ctx)
+	session.Set("user", user)
+	ctx.JSON(http.StatusOK, user)
 }
 
 func loadHTMLString(engine *gin.Engine, name, html string) {
 	// Using template instance to run New copies Delims and Funcs
-	templ := template.Must(engine.HTMLRender.Template.New(name).Parse(html))
+	templ := template.Must(template.New(name).Funcs(engine.FuncMap).Parse(html))
 	engine.SetHTMLTemplate(templ)
 }
 
@@ -240,11 +232,11 @@ func loadPugGlob(engine *gin.Engine, glob string) {
 }
 
 func main() {
-	conn, err := db.Open()
+	db, err := gotime.OpenDB()
 	if err != nil {
 		log.Fatalf("db connection error %v", err)
 	}
-	defer conn.Close()
+	defer db.Close()
 	if err := serve(); err != nil {
 		log.Fatalf("failed starting http server: %v", err)
 	}
