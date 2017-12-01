@@ -1,7 +1,6 @@
 package gotime
 
 import (
-	"github.com/bline/gotime/db"
 	"github.com/bline/gotime/api/proto"
 	"github.com/futurenda/google-auth-id-token-verifier"
 	"context"
@@ -29,13 +28,13 @@ func (*AccountsService) LockUser(ctx context.Context, r *api.LockUserRequest) (*
 }
 
 func NewUserFromIDToken(idtoken string) (*User, error) {
-	conn := db.GetDB()
+	db := GetDB()
 	var curUser User
 	set, err := verifyToken(idtoken)
 	if err != nil {
 		return nil, err
 	}
-	conn.Where("GoogleID = ?", set.Sub).First(&curUser)
+	db.Where("google_id = ?", set.Sub).First(&curUser)
 	if curUser.ID != 0 {
 		return &curUser, nil
 	}
@@ -47,10 +46,9 @@ func NewUserFromIDToken(idtoken string) (*User, error) {
 		LastLogin: time.Now(),
 		Picture: set.Picture,
 		DisplayName: set.Name,
-		IsDisabled: false,
 		IsAdmin: false,
 	}
-	conn.Create(&newUser)
+	db.Create(&newUser)
 	return newUser, nil
 }
 
