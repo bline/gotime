@@ -1,0 +1,40 @@
+doctype html
+html(lang='en')
+    head
+        block headerMeta
+            meta(charset='utf-8')
+            base(href="/")
+            meta(http-equiv='X-UA-Compatible', content='IE=edge')
+            meta(name='viewport', content='width=device-width, initial-scale=1, user-scalable=no')
+            meta(name='description', content='Search Google Drive content')
+            meta(name='author', content='Scott Beck')
+        block title
+            title=siteTitle
+
+        block headerScript
+            link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic')
+            link(href='/static/libs/angular-material/angular-material.css', rel='stylesheet')
+            link(href='/static/libs/angular-material-icons/angular-material-icons.css', rel='stylesheet')
+            link(href="/static/css/app.css", rel="stylesheet")
+            style(type='text/css').
+                [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+                    display: none !important;
+                }
+    body(ng-app='iDrive', ng-cloak='', layout='column')
+        block content
+        block footer
+            footer.text-center
+                p &copy; 2016 Shambhala Mountain Center
+        block footerScript
+            script(src='/static/libs/qs/dist/qs.js')
+            script(src='/static/libs/filesize/lib/filesize.min.js')
+            script(src='/static/libs/javascript-auto-complete/auto-complete.min.js')
+            script(src='/static/libs/jquery/dist/jquery.min.js')
+            script(src='/static/libs/angular/angular.js')
+            script(src='/static/libs/angular-ui-scroll/dist/ui-scroll.js')
+            script(src='/static/libs/angular-resource/angular-resource.js')
+            script(src='/static/libs/angular-aria/angular-aria.js')
+            script(src='/static/libs/angular-animate/angular-animate.js')
+            script(src='/static/libs/angular-material/angular-material.js')
+            script(src='/static/libs/angular-ui-router/release/angular-ui-router.js')
+            script(src='/static/libs/angular-material-icons/angular-material-icons.js')
