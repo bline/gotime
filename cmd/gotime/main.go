@@ -12,15 +12,17 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/bline/gotime/api/proto"
 	"github.com/bline/gotime/config"
+	"github.com/bline/gotime/db"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/bline/gotime"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"github.com/futurenda/google-auth-id-token-verifier"
 	"strings"
+	"errors"
 )
 
 func getEnv() string {
@@ -51,33 +53,41 @@ var (
 	serverHostOverride = flag.String("server_host_override", cfg.GetString("Domain"), "The server name use to verify the hostname returned by TLS handshake")
 )
 
-func serveGrpc() error {
-	enableTls := cfg.GetBool("Grpc.EnableTls")
-
-	port := cfg.GetInt("Grpc.Port")
-
+func getGrpcHandler() gin.HandlerFunc {
 	grpcServer := grpc.NewServer()
 	api.RegisterTimeSheetServer(grpcServer, &gotime.TimeSheetService{})
 	api.RegisterAccountsServer(grpcServer, &gotime.AccountsService{})
 	grpclog.SetLogger(log.New(os.Stdout, "grpc: ", log.LstdFlags))
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
-	handler := func(resp http.ResponseWriter, req *http.Request) {
+	handler := func(ctx *gin.Context) {
+		var (
+			resp = ctx.Writer
+			req = ctx.Request
+		)
 		wrappedServer.ServeHTTP(resp, req)
 	}
-	httpServer := http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: http.HandlerFunc(handler),
-	}
-	log.Printf("Grpc Listening on Port %d", port)
-	if enableTls {
-		return httpServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath)
-	} else {
-		return httpServer.ListenAndServe()
-	}
+	return gin.HandlerFunc(handler)
 }
 
-func serveWeb() error {
+func verifyToken(token string) (*googleAuthIDTokenVerifier.ClaimSet, error) {
+	v := googleAuthIDTokenVerifier.Verifier{}
+	aud := "33812767661-4a1p5lotkkveeodjehfpkucvmbpkmkhf.apps.googleusercontent.com"
+	err := v.VerifyIDToken(token, []string{
+		aud,
+	})
+	if err != nil {
+		return nil, err
+	}
+	claimSet, err := googleAuthIDTokenVerifier.Decode(TOKEN)
+	// claimSet.Iss,claimSet.Email ... (See claimset.go)
+	if !strings.HasSuffix(claimSet.Email, "@shambhalamountain.org") {
+		return nil, errors.New("must use a shambhalamountain.org email address")
+	}
+	return claimSet, nil
+}
+
+func serve() error {
 	enableTls := cfg.GetBool("Http.EnableTls")
 
 	port := cfg.GetInt("Http.Port")
@@ -166,22 +176,36 @@ func init() {
 
 func authorizeRequest() gin.HandlerFunc {
 	return func (ctx *gin.Context) {
+		handleError := func(ctx *gin.Context) {
+			r := ctx.Request
+			if r.ProtoMajor == 2 && strings.HasPrefix(r.Header.Get("Content-Type"), "application/grpc") {
+				ctx.AbortWithStatus(http.StatusUnauthorized)
+			} else {
+				rawUrl := "https://" + r.Host + r.RequestURI
+				newUrl, err := url.Parse(rawUrl)
+				if err != nil {
+					log.Fatalf("Failed Parsing: %s", rawUrl)
+				}
+				curUrl := url.QueryEscape(newUrl.String())
+				authUrl := "https://" + r.Host + "/login?return=" + curUrl
+				ctx.Redirect(http.StatusFound, authUrl)
+				ctx.Abort()
+			}
+		}
 		log.Printf("auth Req: %v", ctx.Request.RequestURI)
 		log.Printf("new: " + "https://" + ctx.Request.Host + ctx.Request.RequestURI)
 		session := sessions.Default(ctx)
-		token := session.Get("token")
-		if token == nil {
-			rawUrl := "https://" + ctx.Request.Host + ctx.Request.RequestURI
-			newUrl, err := url.Parse(rawUrl)
-			if err != nil {
-				log.Fatalf("Failed Parsing: %s", rawUrl)
-			}
-			curUrl := url.QueryEscape(newUrl.String())
-			authUrl := "https://" + ctx.Request.Host + "/login?return=" + curUrl
-			ctx.Redirect(http.StatusFound, authUrl)
-			ctx.Abort()
+		token := session.Get("token").(string)
+		if token == "" {
+			handleError(ctx)
 		} else {
 			// XXX validate token
+			user, err := gotime.NewUserFromIDToken(token)
+			if err != nil {
+				handleError(ctx)
+			}
+			session.Set("UserID", user.ID)
+			session.Set("UserEmail", user.Email)
 			ctx.Next()
 		}
 
@@ -189,14 +213,12 @@ func authorizeRequest() gin.HandlerFunc {
 }
 
 func main() {
-	var g errgroup.Group
-
-	flag.Parse()
-
-	g.Go(serveGrpc)
-	g.Go(serveWeb)
-
-	if err := g.Wait(); err != nil {
+	conn, err := db.Open()
+	if err != nil {
+		log.Fatalf("db connection error %v", err)
+	}
+	defer conn.Close()
+	if err := serve(); err != nil {
 		log.Fatalf("failed starting http server: %v", err)
 	}
 }
